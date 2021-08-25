@@ -1,6 +1,7 @@
 import { IRpcEngine } from "../helpers/types";
 import { IAppState } from "../App";
 import ethereum from "./ethereum";
+import did from "./did";
 
 class RpcEngine implements IRpcEngine {
   public engines: IRpcEngine[];
@@ -38,5 +39,5 @@ class RpcEngine implements IRpcEngine {
 }
 
 export function getRpcEngine() {
-  return new RpcEngine([ethereum]);
+  return new RpcEngine([ethereum, did]);
 }
