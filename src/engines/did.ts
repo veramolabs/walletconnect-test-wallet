@@ -25,6 +25,13 @@ export function renderDidRequests(payload: any): IRequestRenderParams[] {
         { label: "Verifiable Credential", value: JSON.stringify(payload.params[0]) },
       ];
       break;
+    case "did_creds_issue":
+      params = [
+        { label: "Method", value: payload.method },
+        { label: "Payload", value: JSON.stringify(payload.params[0]) },
+        { label: "VerificationMethod", value: JSON.stringify(payload.params[1]) },
+      ];
+      break;
   }
   return params;
 }
@@ -43,6 +50,23 @@ export async function signDidRequests(payload: any, state: IAppState, setState: 
           result = "Credential saved!";
         } else {
           errorMsg = "No credential!";
+        }
+        break;
+      case "did_creds_issue":
+        // const verifiableCredential = payload.params[0];
+        if (payload.params[0]) {
+          try {
+            result = await getAppControllers().agent.createVerifiableCredential({
+              credential: payload.params[0],
+              proofFormat: "jwt",
+            });
+            console.log({ result });
+          } catch (e) {
+            console.log(e);
+            errorMsg = e.message;
+          }
+        } else {
+          errorMsg = "No payload!";
         }
         break;
 
