@@ -47,7 +47,15 @@ export async function signDidRequests(payload: any, state: IAppState, setState: 
       case "did_creds_store":
         // const verifiableCredential = payload.params[0];
         if (payload.params[0]) {
-          result = "Credential saved!";
+          try {
+            result = await getAppControllers().agent.dataStoreSaveVerifiableCredential({
+              verifiableCredential: payload.params[0],
+            });
+            console.log({ result });
+          } catch (e) {
+            console.log(e);
+            errorMsg = e.message;
+          }
         } else {
           errorMsg = "No credential!";
         }

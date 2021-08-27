@@ -43,6 +43,7 @@
     "eth-sig-util": "^2.5.3",
     "ethers": "^5.0.17",
     "ethr-did-resolver": "^4.3.4",
+    "keyvaluestorage": "^0.7.1",
     "prop-types": "^15.7.2",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
