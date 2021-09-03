@@ -32,54 +32,91 @@ export function renderDidRequests(payload: any): IRequestRenderParams[] {
         { label: "VerificationMethod", value: JSON.stringify(payload.params[1]) },
       ];
       break;
+    case "did_creds_present":
+      params = [
+        { label: "Method", value: payload.method },
+        { label: "Payload", value: JSON.stringify(payload.params[0]) },
+      ];
+      break;
   }
   return params;
 }
 
 export async function signDidRequests(payload: any, state: IAppState, setState: any) {
   const { connector } = state;
+  const { agent } = getAppControllers();
 
   let errorMsg = "";
   let result = null;
 
   if (connector) {
-    switch (payload.method) {
-      case "did_creds_store":
-        // const verifiableCredential = payload.params[0];
-        if (payload.params[0]) {
-          try {
-            result = await getAppControllers().agent.dataStoreSaveVerifiableCredential({
+    try {
+      switch (payload.method) {
+        case "did_creds_store":
+          if (payload.params[0]) {
+            result = await agent.dataStoreSaveVerifiableCredential({
               verifiableCredential: payload.params[0],
             });
             console.log({ result });
-          } catch (e) {
-            console.log(e);
-            errorMsg = e.message;
+          } else {
+            errorMsg = "No credential!";
           }
-        } else {
-          errorMsg = "No credential!";
-        }
-        break;
-      case "did_creds_issue":
-        // const verifiableCredential = payload.params[0];
-        if (payload.params[0]) {
-          try {
-            result = await getAppControllers().agent.createVerifiableCredential({
+          break;
+        case "did_creds_issue":
+          if (payload.params[0]) {
+            result = await agent.createVerifiableCredential({
               credential: payload.params[0],
               proofFormat: "jwt",
             });
             console.log({ result });
-          } catch (e) {
-            console.log(e);
-            errorMsg = e.message;
+          } else {
+            errorMsg = "No payload!";
           }
-        } else {
-          errorMsg = "No payload!";
-        }
-        break;
-
-      default:
-        break;
+          break;
+        case "did_creds_present":
+          if (payload.params[0]) {
+            const credentials = await agent.getVerifiableCredentialsFromPresentationDefinition({
+              presentationDefinition: payload.params[0],
+            });
+            if (credentials.length > 0) {
+              const identifiers = await agent.didManagerFind();
+              const presentation = await agent.createVerifiablePresentation({
+                proofFormat: "jwt",
+                presentation: {
+                  "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "https://identity.foundation/presentation-exchange/submission/v1",
+                  ],
+                  presentation_submission: {
+                    id: "accd5adf-1dbf-4ed9-9ba2-d687476126cb",
+                    definition_id: "31e2f0f1-6b70-411d-b239-56aed5321884",
+                    descriptor_map: [
+                      {
+                        id: "867bfe7a-5b91-46b2-9ba4-70028b8d9cc8",
+                        format: "ldp_vp",
+                        path: "$.verifiableCredential[0]",
+                      },
+                    ],
+                  },
+                  holder: identifiers[0].did,
+                  type: ["VerifiablePresentation", "PresentationSubmission"],
+                  verifiableCredential: [credentials[0]],
+                },
+              });
+              result = presentation;
+            } else {
+              errorMsg = "No credentials";
+            }
+          } else {
+            errorMsg = "No payload!";
+          }
+          break;
+        default:
+          break;
+      }
+    } catch (e) {
+      console.log(e);
+      errorMsg = e.message;
     }
 
     if (result) {

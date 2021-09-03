@@ -16,19 +16,22 @@ import { KeyManagementSystem } from "@veramo/kms-local";
 import { DIDStore } from "./plugins/did-store";
 import { KeyStore } from "./plugins/key-store";
 import { DataStore } from "./plugins/data-store";
+import { IPresentationExchange, PresentationExchange } from "./plugins/presentation-exchange";
 import { getResolver as ethrDidResolver } from "ethr-did-resolver";
 import { getResolver as webDidResolver } from "web-did-resolver";
 import KeyValueStorage from "keyvaluestorage";
 
 export type ConfiguredAgent = TAgent<
-  IDIDManager & IKeyManager & IResolver & ICredentialIssuer & IDataStore
+  IDIDManager & IKeyManager & IResolver & ICredentialIssuer & IDataStore & IPresentationExchange
 >;
 
 const options = {};
 const storage = new KeyValueStorage(options);
 
 export const createAgent = (addresses: string[], mnemonic: string): ConfiguredAgent => {
-  return _createAgent<IDIDManager & IKeyManager & IResolver & ICredentialIssuer & IDataStore>({
+  return _createAgent<
+    IDIDManager & IKeyManager & IResolver & ICredentialIssuer & IDataStore & IPresentationExchange
+  >({
     plugins: [
       new KeyManager({
         store: new KeyStore({ addresses, mnemonic }),
@@ -57,6 +60,7 @@ export const createAgent = (addresses: string[], mnemonic: string): ConfiguredAg
       }),
       new CredentialIssuer(),
       new DataStore(storage),
+      new PresentationExchange(storage),
     ],
   });
 };
