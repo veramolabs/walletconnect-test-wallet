@@ -17,7 +17,7 @@ export class KeyStore implements AbstractKeyStore {
         const hdWallet = Wallet.fromMnemonic(mnemonic);
 
         return {
-          kid: address,
+          kid: address.slice(2),
           privateKeyHex: hdWallet.privateKey,
           publicKeyHex: hdWallet.publicKey,
           type: "Secp256k1",

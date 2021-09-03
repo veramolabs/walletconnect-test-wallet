@@ -23,7 +23,7 @@ export class DIDStore implements AbstractDIDStore {
       services: [],
       keys: [
         {
-          kid: did.replace("did:ethr:", ""),
+          kid: did.replace("did:ethr:0x", ""),
           type: "Secp256k1",
           kms: "local",
           publicKeyHex: "",
@@ -35,7 +35,7 @@ export class DIDStore implements AbstractDIDStore {
   public async list(): Promise<IIdentifier[]> {
     return await Promise.all(
       this.addresses.map(async address => {
-        return this.get({ did: `did:ethr:0x${address}`, alias: "", provider: "" });
+        return this.get({ did: `did:ethr:${address}`, alias: "", provider: "" });
       }),
     );
   }
